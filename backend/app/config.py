@@ -1,8 +1,9 @@
 """Application configuration."""
 
-from typing import List
+from typing import List, Union
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
+import json
 
 
 class Settings(BaseSettings):
@@ -15,14 +16,26 @@ class Settings(BaseSettings):
 
     # API
     api_version: str = "v1"
-    allowed_hosts: List[str] = Field(
+    allowed_hosts: Union[List[str], str] = Field(
         default=["localhost", "127.0.0.1"],
         env="ALLOWED_HOSTS"
     )
-    cors_origins: List[str] = Field(
+    cors_origins: Union[List[str], str] = Field(
         default=["http://localhost:3000", "http://localhost:5173"],
         env="CORS_ORIGINS"
     )
+
+    @field_validator('allowed_hosts', 'cors_origins', mode='before')
+    @classmethod
+    def parse_list(cls, v):
+        """Parse list from string if needed."""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                # If not JSON, split by comma
+                return [s.strip() for s in v.split(',') if s.strip()]
+        return v
 
     # Oracle Database
     oracle_user: str = Field(default="", env="ORACLE_USER")
@@ -46,7 +59,10 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
         case_sensitive = False
+        # Don't fail if .env file doesn't exist (Railway doesn't have one)
+        extra = "ignore"
 
 
 # Global settings instance
