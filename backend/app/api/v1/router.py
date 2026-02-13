@@ -7,7 +7,7 @@ import os
 logger = logging.getLogger(__name__)
 
 # Always import non-Oracle endpoints
-from app.api.v1 import health, auth, user_connections
+from app.api.v1 import health, auth
 
 # Create main API router
 api_router = APIRouter()
@@ -15,7 +15,6 @@ api_router = APIRouter()
 # Always include authentication and health endpoints
 api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 api_router.include_router(health.router, prefix="/health", tags=["health"])
-api_router.include_router(user_connections.router, prefix="/user-connections", tags=["user-connections"])
 
 # Conditionally import Oracle-dependent endpoints (only if cx_Oracle is available)
 ORACLE_ENDPOINTS_AVAILABLE = False
@@ -23,6 +22,7 @@ try:
     import cx_Oracle
     # If cx_Oracle is available, import Oracle-dependent modules
     from app.api.v1 import (
+        user_connections,
         connections,
         queries,
         execution_plans,
@@ -35,6 +35,7 @@ try:
     )
 
     # Include Oracle-dependent endpoints
+    api_router.include_router(user_connections.router, prefix="/user-connections", tags=["user-connections"])
     api_router.include_router(connections.router, prefix="/connections", tags=["connections"])
     api_router.include_router(queries.router, prefix="/queries", tags=["queries"])
     api_router.include_router(execution_plans.router, prefix="/execution-plans", tags=["execution-plans"])
@@ -58,10 +59,10 @@ async def api_root():
     base_endpoints = {
         "auth": "/api/v1/auth",
         "health": "/api/v1/health",
-        "user-connections": "/api/v1/user-connections",
     }
 
     oracle_endpoints = {
+        "user-connections": "/api/v1/user-connections",
         "connections": "/api/v1/connections",
         "queries": "/api/v1/queries",
         "execution-plans": "/api/v1/execution-plans",
