@@ -6,9 +6,10 @@ from sqlalchemy.orm import sessionmaker
 import os
 
 # Use SQLite for simplicity (can be changed to PostgreSQL for production)
+# Support both DATABASE_URL and APP_DATABASE_URL for Railway compatibility
 SQLALCHEMY_DATABASE_URL = os.getenv(
-    "APP_DATABASE_URL",
-    "sqlite:///./query_tuner_app.db"
+    "DATABASE_URL",
+    os.getenv("APP_DATABASE_URL", "sqlite:///./query_tuner_app.db")
 )
 
 engine = create_engine(
