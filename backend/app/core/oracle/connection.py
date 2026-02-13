@@ -103,7 +103,7 @@ class ConnectionManager:
             logger.error(error_message)
             raise OracleConnectionError(error_message) from e
 
-    def get_pool(self) -> cx_Oracle.SessionPool:
+    def get_pool(self) -> SessionPool:
         """
         Get existing connection pool or create new one.
 
