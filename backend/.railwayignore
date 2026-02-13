@@ -1,0 +1,11 @@
+# Ignore Docker files - Railway will use Python buildpack
+Dockerfile.oracle
+Dockerfile
+
+# Ignore Oracle requirements
+requirements/base.txt
+requirements/prod.txt
+requirements/dev.txt
+requirements/test.txt
+
+# Railway will use requirements.txt in backend root
