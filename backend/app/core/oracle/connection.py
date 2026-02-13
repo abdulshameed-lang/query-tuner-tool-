@@ -1,11 +1,18 @@
 """Oracle database connection management with connection pooling."""
 
 from typing import Optional
-import cx_Oracle
 import logging
 from contextlib import contextmanager
 
 from app.config import settings
+
+# Optional Oracle import - don't crash if not available
+try:
+    import cx_Oracle
+    ORACLE_AVAILABLE = True
+except ImportError:
+    cx_Oracle = None
+    ORACLE_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 

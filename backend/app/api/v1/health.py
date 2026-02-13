@@ -6,7 +6,15 @@ from datetime import datetime
 import logging
 
 from app.config import settings
-from app.core.oracle.connection import get_connection_manager, OracleConnectionError
+
+# Optional Oracle import - gracefully handle if not available
+try:
+    from app.core.oracle.connection import get_connection_manager, OracleConnectionError
+    ORACLE_AVAILABLE = True
+except ImportError:
+    get_connection_manager = None
+    OracleConnectionError = Exception
+    ORACLE_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -58,29 +66,35 @@ async def detailed_health_check():
     """
     components = {}
 
-    # Check Oracle connection
-    try:
-        manager = get_connection_manager()
-        pool_stats = manager.get_pool_stats()
+    # Check Oracle connection (only if Oracle is available)
+    if not ORACLE_AVAILABLE:
         components["oracle"] = {
-            "status": "healthy",
-            "pool_status": pool_stats.get("status", "unknown"),
-            "connections": {
-                "busy": pool_stats.get("busy_count", 0),
-                "open": pool_stats.get("open_count", 0),
-                "max": pool_stats.get("max_size", 0),
-            },
+            "status": "not_available",
+            "message": "Oracle support not installed (Railway deployment)",
         }
-    except OracleConnectionError as e:
-        components["oracle"] = {
-            "status": "unhealthy",
-            "error": e.message,
-        }
-    except Exception as e:
-        components["oracle"] = {
-            "status": "unknown",
-            "error": str(e),
-        }
+    else:
+        try:
+            manager = get_connection_manager()
+            pool_stats = manager.get_pool_stats()
+            components["oracle"] = {
+                "status": "healthy",
+                "pool_status": pool_stats.get("status", "unknown"),
+                "connections": {
+                    "busy": pool_stats.get("busy_count", 0),
+                    "open": pool_stats.get("open_count", 0),
+                    "max": pool_stats.get("max_size", 0),
+                },
+            }
+        except OracleConnectionError as e:
+            components["oracle"] = {
+                "status": "unhealthy",
+                "error": e.message if hasattr(e, 'message') else str(e),
+            }
+        except Exception as e:
+            components["oracle"] = {
+                "status": "unknown",
+                "error": str(e),
+            }
 
     # Check Redis (TODO: implement when Redis is integrated)
     components["redis"] = {
@@ -89,7 +103,9 @@ async def detailed_health_check():
     }
 
     # Determine overall status
-    oracle_healthy = components.get("oracle", {}).get("status") == "healthy"
+    oracle_status = components.get("oracle", {}).get("status")
+    # Consider "not_available" as acceptable for Railway deployment
+    oracle_healthy = oracle_status in ["healthy", "not_available"]
     overall_status = "healthy" if oracle_healthy else "degraded"
 
     return {
@@ -109,6 +125,10 @@ async def readiness_check():
     Returns:
         200 if ready, 503 if not ready
     """
+    # If Oracle is not available (Railway), still consider ready
+    if not ORACLE_AVAILABLE:
+        return {"status": "ready", "message": "Railway deployment without Oracle"}
+
     try:
         manager = get_connection_manager()
         manager.test_connection()
