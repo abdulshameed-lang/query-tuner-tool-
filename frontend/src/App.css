@@ -1,0 +1,85 @@
+.app {
+  min-height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.app-header {
+  background-color: #001529;
+  color: white;
+  padding: 20px 40px;
+  text-align: center;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  color: white;
+}
+
+.app-header p {
+  margin: 10px 0 0 0;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.app-main {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.welcome-container {
+  background: white;
+  border-radius: 8px;
+  padding: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-container h2 {
+  color: #001529;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+.welcome-container p {
+  color: #595959;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.welcome-container ul {
+  list-style: none;
+  margin: 30px 0;
+  padding: 0;
+}
+
+.welcome-container ul li {
+  color: #262626;
+  font-size: 1.1rem;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.welcome-container ul li:last-child {
+  border-bottom: none;
+}
+
+.welcome-container .status {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 4px;
+  color: #52c41a;
+}
+
+.welcome-container .status a {
+  color: #1890ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.welcome-container .status a:hover {
+  text-decoration: underline;
+}
