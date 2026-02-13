@@ -1,6 +1,6 @@
 """Oracle database connection management with connection pooling."""
 
-from typing import Optional
+from typing import Optional, TYPE_CHECKING, Any
 import logging
 from contextlib import contextmanager
 
@@ -13,6 +13,13 @@ try:
 except ImportError:
     cx_Oracle = None
     ORACLE_AVAILABLE = False
+
+# Type checking imports (not evaluated at runtime)
+if TYPE_CHECKING and cx_Oracle:
+    from cx_Oracle import SessionPool, Connection
+else:
+    SessionPool = Any
+    Connection = Any
 
 logger = logging.getLogger(__name__)
 
@@ -47,14 +54,17 @@ class ConnectionManager:
             min_pool_size: Minimum connections in pool
             max_pool_size: Maximum connections in pool
         """
+        if not ORACLE_AVAILABLE:
+            raise OracleConnectionError("cx_Oracle not available - cannot create connection manager")
+
         self.user = user
         self.password = password
         self.dsn = dsn
         self.min_pool_size = min_pool_size
         self.max_pool_size = max_pool_size
-        self._pool: Optional[cx_Oracle.SessionPool] = None
+        self._pool: Optional[SessionPool] = None
 
-    def create_pool(self) -> cx_Oracle.SessionPool:
+    def create_pool(self) -> SessionPool:
         """
         Create Oracle connection pool.
 
